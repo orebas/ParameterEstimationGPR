@@ -1,0 +1,26 @@
+\section{Results}
+\label{sec:results}
+
+Our experimental evaluation clearly demonstrates the transformative impact of replacing interpolation with Gaussian Process Regression in the algebraic parameter estimation pipeline. The GPR-enhanced method not only proves robust to significant measurement noise but also consistently matches or exceeds the performance of a state-of-the-art optimization-based approach.
+
+\subsection{Overall Performance}
+
+We first assess the overall performance of the three methods---our GPR-enhanced algebraic method (ODEPE-GPR), the optimization-based SciML, and the original interpolation-based algebraic method (ODEPE-AAA)---averaged across all 11 benchmark systems and all noise levels. The results are summarized in Table~\ref{tab:overall_performance}.
+
+\input{tables/overall_performance.tex}
+
+As the table shows, both ODEPE-GPR and SciML achieve a near-perfect success rate of 99.6\%, indicating that they are both highly reliable at finding accurate parameter estimates across a wide range of conditions. In stark contrast, the original ODEPE-AAA method has a success rate of only 38.2\%. This confirms our central hypothesis: the reliance on interpolation renders the traditional algebraic method brittle and unreliable in the presence of noise. While its median error on the few successful runs is low, it fails to find a correct solution in the majority of cases. Our GPR-based method, however, is just as reliable as the established, optimization-based SciML approach.
+
+\subsection{Robustness to Noise}
+
+To understand the source of this performance difference, we analyze the median relative error of each method as a function of the noise level. The results, presented in Table~\ref{tab:performance_by_noise}, are striking.
+
+\input{tables/performance_by_noise.tex}
+
+% TODO: Create a log-log plot of the data in Table 2 (Error vs. Noise Level) to visually illustrate these findings.
+
+At zero and very low (0.01\%) noise levels, all three methods perform identically and achieve near-perfect accuracy. This is expected, as the algebraic method is known to be highly effective on clean data. However, the performance diverges dramatically as the noise increases.
+
+At a moderate noise level of 0.1\%, the error of the ODEPE-AAA method explodes, increasing by nearly three orders of magnitude. By contrast, our ODEPE-GPR method's error increases gracefully, remaining on par with the SciML optimization baseline. At high noise levels (1\% and 2\%), the ODEPE-AAA method fails completely, with errors that are orders of magnitude larger than the other methods. Remarkably, our ODEPE-GPR method continues to track the performance of SciML closely, demonstrating a robust and predictable degradation of performance as the task becomes more difficult.
+
+These results tell a clear story: the GPR-enhancement successfully tames the noise sensitivity of the algebraic approach. It makes the method robust, allowing it to perform just as well as a leading optimization-based method in low-to-moderate noise regimes, where the original algebraic method is entirely unusable.

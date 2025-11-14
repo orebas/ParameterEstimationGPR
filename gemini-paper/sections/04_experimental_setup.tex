@@ -1,0 +1,35 @@
+\section{Experimental Setup}
+\label{sec:experimental_setup}
+
+To rigorously evaluate the performance and robustness of our GPR-enhanced algebraic method, we designed a comprehensive experimental protocol using a diverse suite of benchmark systems. This section details the systems under study, the data generation process, the baseline methods used for comparison, and the metrics for evaluation.
+
+\subsection{Benchmark Systems}
+We selected 11 ODE models from various scientific domains to ensure our evaluation is not biased toward a specific type of system dynamics. The suite includes classic models from population dynamics, epidemiology, immunology, and neuroscience, representing a wide range of complexities in terms of the number of states and parameters. A full description of these systems can be found in the appendix of \citep{bassik2023robustparameterestimationrational}.
+
+% TODO: Create a table summarizing the benchmark systems (Name, #Params, #States, Domain) and input it here. Data is in `dataset_package/systems.json`.
+
+\subsection{Data Generation and Noise Protocol}
+For each benchmark system, we generated multiple datasets to test performance under various conditions.
+\begin{itemize}
+    \item \textbf{True Parameters:} For each of 10 trials, true parameter values were drawn randomly from a uniform distribution $U[0.1, 0.9]$.
+    \item \textbf{Data Simulation:} The ODE system was solved using a high-precision numerical integrator to generate a baseline, noise-free trajectory. Data was sampled at 100 equally spaced time points.
+    \item \textbf{Noise Injection:} To simulate realistic experimental data, we added Gaussian white noise to the clean trajectory. We tested performance across a wide spectrum of five noise levels, corresponding to 0\%, 0.01\%, 0.1\%, 1\%, and 2\% of the standard deviation of the noise-free signal. This resulted in $11 \text{ systems} \times 10 \text{ trials} \times 5 \text{ noise levels} = 550$ unique datasets.
+\end{itemize}
+
+\subsection{Baseline Methods for Comparison}
+To contextualize the performance of our method, we compare it against two classes of estimators: the original, noise-sensitive algebraic method and a representative state-of-the-art optimization-based method.
+\begin{itemize}
+    \item \textbf{ODEPE (AAA):} This represents the original algebraic method that uses the Adaptive Antoulas-Anderson (AAA) rational interpolation algorithm for derivative estimation. This baseline serves to demonstrate the impact of noise on non-regressive approaches.
+    \item \textbf{SciML:} This represents a modern, highly-optimized shooting method implemented in the Julia SciML ecosystem \citep{rackauckas2017differentialequations}. It uses a gradient-based local optimization algorithm (a combination of ADAM and L-BFGS) to find a single best-fit parameter set. This serves as a strong baseline representing the standard approach in the field.
+    \item \textbf{Our Method (ODEPE-GPR):} This is the GPR-enhanced algebraic method proposed in this paper.
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+We evaluate the methods based on two primary metrics that capture both the accuracy and reliability of the parameter estimates.
+\begin{itemize}
+    \item \textbf{Success Rate:} An estimation run is considered a "success" if the mean relative error of all estimated parameters is less than 10\%. The success rate is the percentage of the 10 trials for a given system and noise level that meet this criterion. This metric measures the reliability and robustness of a method.
+    \item \textbf{Median Relative Error:} For all runs (including failures), we compute the median of the mean relative errors. Runs that completely failed to produce any result are assigned a penalty value of $10^6\%$ to reflect their failure. We use the median because it is robust to occasional outliers while still accounting for complete failures, providing a better sense of the method's typical accuracy.
+\end{itemize}
+Together, these metrics provide a comprehensive picture of a method's real-world performance: its likelihood of finding a reasonable solution (Success Rate) and the quality of that solution when it does (Median Relative Error).
+
+% TODO: Add citations for SciML (DifferentialEquations.jl)

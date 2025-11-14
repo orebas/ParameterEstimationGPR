@@ -1,0 +1,38 @@
+\section{Background}
+\label{sec:background}
+
+To understand our contribution, it is necessary to first review the two core technologies it combines: the differential-algebraic approach to parameter estimation and Gaussian Process Regression for function approximation.
+
+\subsection{The Differential-Algebraic Approach}
+The algebraic approach to parameter estimation fundamentally reframes the problem from one of numerical optimization to one of algebraic root-finding. The core idea, as detailed in works such as \citep{bassik2023robustparameterestimationrational}, is to eliminate the state variables from the system of ODEs through symbolic differentiation and substitution, resulting in a set of equations that relate the system parameters directly to the observed outputs and their higher-order derivatives.
+
+Consider a general ODE system:
+\begin{align}
+    \mathbf{x}'(t) &= \mathbf{f}(\mathbf{x}(t), \mathbf{p}) \\
+    \mathbf{y}(t) &= \mathbf{g}(\mathbf{x}(t), \mathbf{p})
+\end{align}
+By repeatedly differentiating the output equation $\mathbf{y}(t)$ with respect to time and substituting in the expressions for $\mathbf{x}'(t)$ from the system dynamics, one can generate a tower of higher-order derivative equations. For a structurally identifiable system, this process eventually yields a set of polynomial equations involving only the parameters $\mathbf{p}$ and the time derivatives of the outputs, $\mathbf{y}, \mathbf{y}', \mathbf{y}'', \ldots$.
+
+Once this symbolic manipulation is complete, the problem becomes concrete: if one can provide accurate numerical values for the derivatives of the outputs at a specific time point, the problem reduces to solving a system of polynomial equations for the unknown parameters $\mathbf{p}$. This approach carries two transformative advantages:
+\begin{enumerate}
+    \item \textbf{No initial guesses are required.} Unlike optimization methods that traverse an error landscape, polynomial solvers are designed to find all solutions within a given domain directly.
+    \item \textbf{All solutions can be found.} For systems with multiple valid parameter sets (i.e., those that are only locally identifiable), this method can return the complete set of solutions, providing a full picture of the system's identifiability.
+\end{enumerate}
+
+However, as noted, the practical utility of this powerful method hinges entirely on the ability to obtain accurate numerical estimates of the output derivatives from noisy data---a notoriously difficult task.
+
+\subsection{Gaussian Process Regression for Derivative Estimation}
+The challenge of accurately estimating derivatives from noisy data is the primary bottleneck for the algebraic method. Simple finite differences or interpolation schemes like polynomial or rational interpolation tend to overfit the noise, leading to wildly inaccurate and unstable derivative estimates. What is required is a method that can look past the noise to infer the most likely underlying smooth function that generated the data. This is a problem of regression, not interpolation.
+
+Gaussian Process Regression (GPR) is a non-parametric, Bayesian method for regression that is exceptionally well-suited to this task \citep{Rasmussen2006Gaussian}. Instead of fitting a single function to the data, GPR defines a prior distribution over a space of functions. When presented with data, it updates this prior to a posterior distribution that represents the most likely functions given the observations.
+
+The key features of GPR that make it ideal for our purpose are:
+\begin{itemize}
+    \item \textbf{Principled Smoothing:} A smoothness assumption is encoded in the prior via a kernel function (e.g., the squared exponential or RBF kernel). This allows the model to separate the underlying smooth signal from the high-frequency noise.
+    \item \textbf{Explicit Noise Modeling:} GPR explicitly models the measurement noise as part of its generative model, typically as a Gaussian with a variance $\sigma_n^2$. Crucially, this noise variance, along with other kernel hyperparameters, can be learned directly from the data by maximizing the marginal likelihood.
+    \item \textbf{Differentiable Mean Function:} The primary output of a trained GPR model is the posterior mean function, which is a smooth, infinitely differentiable function that represents the best estimate of the underlying signal. This function can be differentiated analytically or, more conveniently, via automatic differentiation to any desired order.
+\end{itemize}
+
+By using GPR, we are not merely smoothing the data; we are performing a principled Bayesian inference to find the most probable underlying function. As established in the comprehensive benchmark by \citep{bassik2025benchmark}, GPR stands out as the most robust and accurate method for estimating high-order derivatives from noisy time-series data. This finding provides the empirical justification for its use as the core of our robust algebraic parameter estimation framework.
+
+% TODO: Find and add citations for the bassik2023 and bassik2025 papers to references.bib

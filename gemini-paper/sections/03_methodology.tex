@@ -1,0 +1,29 @@
+\section{Methodology}
+\label{sec:methodology}
+
+Our method synthesizes the theoretical strengths of the differential-algebraic approach with the practical robustness of Gaussian Process Regression. The core innovation is the replacement of a noise-sensitive interpolation step with a principled, probabilistic regression that yields stable, high-order derivatives. The overall workflow can be broken down into five key steps, which we detail below.
+
+\subsection{Algorithm Overview}
+
+\begin{enumerate}
+    \item \textbf{Symbolic Differentiation:} The process begins with a purely symbolic analysis of the ODE system. Following the differential-algebraic methodology, we repeatedly differentiate the system's output equations with respect to time, substituting the state dynamics at each step. This procedure generates a system of equations relating the system parameters $\mathbf{p}$ to the time derivatives of the observable outputs $\mathbf{y}, \mathbf{y}', \mathbf{y}'', \ldots, \mathbf{y}^{(d)}$. The required order of differentiation, $d$, is determined by the structure of the model and can often be determined by identifiability analysis software.
+
+    \item \textbf{GPR-based Derivative Estimation:} This step is the central contribution of our work. Given a time series of noisy measurements $\{ (t_i, y_i) \}$, we fit a Gaussian Process Regression model to the data for each output variable. From the trained GPR model, we extract the posterior mean function, $\mu_{GP}(t)$, which represents the most probable underlying smooth function that generated the data. We then use automatic differentiation (specifically, Taylor-mode AD for efficiency) to compute the numerical values of this function's derivatives, $\mu_{GP}(t_0), \mu'_{GP}(t_0), \ldots, \mu^{(d)}_{GP}(t_0)$, at a chosen time point $t_0$ (typically $t_0=0$).
+
+    \item \textbf{Polynomial System Assembly:} The numerical derivative values obtained from the GPR models are substituted into the symbolic equations derived in Step 1. This transforms the differential system into a concrete, numerical system of polynomial equations where the only unknowns are the parameters $\mathbf{p}$ and the state variables $\mathbf{x}(t_0)$ at the chosen time point.
+
+    \item \textbf{Numerical Root Finding:} The resulting polynomial system is solved using a numerical algebraic geometry solver. We primarily use homotopy continuation, a robust technique for finding all complex solutions to a system of polynomial equations. The real-valued solutions from this set form our candidate parameter sets.
+
+    \item \textbf{Solution Filtering and Validation:} Each candidate parameter set $(\hat{\mathbf{p}}, \hat{\mathbf{x}}_0)$ is used to simulate the original ODE system over the full time domain. The root-mean-square error (RMSE) between each simulation and the original measurement data is computed. The parameter set yielding the lowest RMSE is selected as the final estimate. For systems that are only locally identifiable, this step may yield multiple distinct parameter sets with similarly low error, thereby revealing the system's identifiability structure.
+\end{enumerate}
+
+\subsection{GPR Implementation for Robust Differentiation}
+The success of this entire pipeline hinges on the quality of the derivative estimates in Step 2. As established in our companion benchmark study \citep{bassik2025benchmark}, the choice of GPR implementation is critical. Our approach uses the following configuration:
+\begin{itemize}
+    \item \textbf{Kernel:} We employ a squared exponential (also known as Radial Basis Function or RBF) kernel, which embeds the prior assumption that the underlying function is smooth and infinitely differentiable---a natural fit for the solutions of most physical ODE systems.
+    \item \textbf{Hyperparameter Optimization:} The GPR model's hyperparameters, including the kernel's length scale and the variance of the measurement noise, are not set manually. Instead, they are automatically learned from the data by maximizing the log marginal likelihood. This allows the model to adaptively determine the appropriate level of smoothing based on the observed data.
+    \item \textbf{Automatic Differentiation:} After fitting, we do not use kernel-specific derivative formulas. We extract the posterior mean function and apply Taylor-mode automatic differentiation \citep{TaylorDiff_jl} to it. This provides an efficient and numerically exact method for computing all required high-order derivatives in a single pass, avoiding the exponential complexity associated with repeated application of forward- or reverse-mode AD.
+\end{itemize}
+
+By combining these elements, we create a derivative estimation engine that is not only robust to noise but also highly automated, requiring no manual tuning of smoothing parameters. This "fit-then-differentiate" paradigm, powered by GPR and Taylor-mode AD, is the key enabling technology that makes the algebraic method practical for real-world applications.
+% TODO: Add citations for TaylorDiff.jl
