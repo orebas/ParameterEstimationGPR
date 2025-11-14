@@ -167,56 +167,24 @@ This protocol results in 11 systems $\times$ 5 noise levels $\times$ 10 trials =
 To quantify the performance of each method, we use two primary metrics. Importantly, any parameters known to be structurally unidentifiable from the analysis in Step 1 are excluded a priori from all error calculations.
 \begin{enumerate}
     \item \textbf{Success Rate:} A parameter estimation run is considered a ``success" based on multiple relative error thresholds. We report the percentage of trials where the relative error for every identifiable parameter is less than 1\% (SR-1), 10\% (SR-10), and 50\% (SR-50). This multi-threshold approach captures both the precision and the overall reliability of a method.
-    \item \textbf{Median Relative Error:} For all successful runs (using the 50\% threshold), we calculate the median of the relative errors across all identifiable parameters. We use the median because it is robust to occasional outliers. The relative error for a single parameter $p$ is defined as $|p_{\text{true}} - p_{\text{estimated}}| / |p_{\text{true}}|$. For locally identifiable systems where our method returns multiple solutions, for the purpose of this benchmark we select the solution closest to the known ground truth to calculate the error.
+    \item \textbf{Median Relative Error:} For each experimental run, we calculate the mean relative error across all identifiable parameters. The relative error for a single parameter $p$ is defined as $|p_{\text{true}} - p_{\text{estimated}}| / |p_{\text{true}}|$. Runs that failed to produce any result are assigned a penalty error of $10^6$. We then report the median of these per-run mean errors across all experiments. We use the median because it is robust to occasional outliers. For locally identifiable systems where our method returns multiple solutions, for the purpose of this benchmark we select the solution closest to the known ground truth to calculate the error.
 \end{enumerate}
 
 \section{Results}
 \label{sec:results}
-Our benchmark provides a nuanced view of the performance of different parameter estimation strategies. The results reveal a clear trade-off between precision, robustness, and computational speed. In the median error calculations presented below, runs that failed to produce any result were assigned a large penalty error of $10^6$ to ensure the failures were accounted for in the statistics.  In no case does the value of this penalty affect the median error calculation.
+Our benchmark provides a nuanced view of the performance of different parameter estimation strategies. The results reveal a clear trade-off between precision, robustness, and computational speed.
 
 \subsection{Overall Performance}
 The aggregate performance across all systems and noise levels is summarized in Table~\ref{tab:overall_performance}. This table shows a clear trade-off: \texttt{ODEPE-GPR (polished)} is the most precise method, achieving the highest success rate at the strict 1\% error threshold (58.5\%). In contrast, \texttt{SciML} is the most robust, achieving the highest success rate at the 50\% error threshold (90.0\%), and is also the fastest.
 
-\begin{table}[ht]
-\centering
-\caption{Multi-threshold success rates with median errors (all errors shown as percentages)}
-\label{tab:overall_performance}
-\small
-\begin{tabular}{lrrrrr}
-\toprule
-Method & SR-1 (\%) & SR-10 (\%) & SR-50 (\%) & Median Error (\%) & Time (s) \\
-\midrule
-ODEPE-GPR & 56.2 & 68.0 & 80.9 & 0.26 & 528 \\
-ODEPE-GPR (polished) & 58.5 & 68.9 & 81.6 & 0.13 & 1572 \\
-SciML & 51.1 & 67.6 & 90.0 & 0.44 & 222 \\
-AMIGO2 [0,10] & 55.6 & 65.1 & 77.3 & 0.15 & 706 \\
-AMIGO2 [0,100] & 50.7 & 59.5 & 74.0 & 0.38 & 737 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\input{tables/table_1_overall_performance.tex}
 
-The results in Table~\ref{tab:overall_performance} highlight several key findings. Our GPR-enhanced method, \texttt{ODEPE-GPR}, demonstrates excellent reliability, with a high success rate even at a strict 1\% error threshold (SR-1). While the \texttt{SciML} optimizer achieves a higher success rate at the looser 50\% threshold, our GPR-enhanced method is more likely to produce a high-precision result. In terms of accuracy, \texttt{ODEPE-GPR} achieves a median error of 0.26\%, which is highly competitive.
+The results in Table~\ref{tab:overall_performance} highlight several key findings. Our GPR-enhanced method, \texttt{ODEPE-GPR}, demonstrates excellent reliability, with a high success rate even at a strict 1\% error threshold (SR-1). While the \texttt{SciML} optimizer achieves a higher success rate at the looser 50\% threshold, our GPR-enhanced method is more likely to produce a high-precision result. In terms of accuracy, \texttt{ODEPE-GPR} achieves a median error of 0.21\%, which is highly competitive.
 
 \subsection{Robustness to Measurement Noise}
 The performance degradation as noise increases is detailed in Table~\ref{tab:noise_performance}. This view confirms the trade-offs seen in the overall performance.
 
-\begin{table}[ht]
-\centering
-\caption{Median relative error (\%) by noise level. A dash (---) indicates that the method failed to produce a finite result for that noise level.}
-\label{tab:noise_performance}
-\footnotesize
-\begin{tabular}{lrrrrr}
-\toprule
-Method & No noise & $10^{-8}$ & $10^{-6}$ & $10^{-4}$ & $10^{-2}$ \\
-\midrule
-ODEPE-GPR & 0.000 & 0.032 & 0.292 & 10.35 & 68.61 \\
-ODEPE-GPR (polished) & 0.000 & 0.008 & 0.095 & 6.98 & 69.51 \\
-SciML & 0.003 & 0.002 & 0.023 & 2.49 & 26.80 \\
-AMIGO2 [0,10] & 0.000 & 0.000 & 0.044 & 2.85 & 50.96 \\
-AMIGO2 [0,100] & 0.000 & 0.000 & 0.043 & 2.85 & 50.96 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\input{tables/table_2_performance_by_noise.tex}
 
 The data shows that the GPR-based methods offer unparalleled precision in low-noise regimes (no noise to $10^{-6}$). However, as the noise level increases past the critical threshold of $10^{-4}$, their performance degrades more rapidly than the \texttt{SciML} optimizer, which proves to be the most robust method in high-noise conditions. This analysis shows that methods do not fail catastrophically but degrade gracefully, producing less accurate estimates. The choice of method should therefore be guided by the expected noise level and the required precision of the application.
 

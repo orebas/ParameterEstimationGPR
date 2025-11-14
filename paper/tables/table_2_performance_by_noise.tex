@@ -1,0 +1,16 @@
+\begin{table}[ht]
+\centering
+\caption{Median relative error (\%) by noise level (Method A with $10^6$ penalty for failures)}
+\label{tab:performance_by_noise}
+\begin{tabular}{lrrrrr}
+\toprule
+Method & 0 & $10^{-8}$ & $10^{-6}$ & $10^{-4}$ & $10^{-2}$ \\
+\midrule
+ODEPE-GPR & 0.00 & 0.03 & 0.29 & 11.13 & 67.88 \\
+ODEPE-GPR (polished) & 0.00 & 0.01 & 0.09 & 5.90 & 68.52 \\
+SciML & 0.00 & 0.00 & 0.02 & 2.64 & 23.31 \\
+AMIGO2 [0,10] & 0.00 & 0.00 & 0.05 & 2.73 & 46.27 \\
+AMIGO2 [0,100] & 0.00 & 0.00 & 0.05 & 2.55 & 44.52 \\
+\bottomrule
+\end{tabular}
+\end{table}

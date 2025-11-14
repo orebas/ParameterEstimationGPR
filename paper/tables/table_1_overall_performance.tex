@@ -1,0 +1,16 @@
+\begin{table}[ht]
+\centering
+\caption{Overall performance with multi-threshold success rates (Method A with $10^6$ penalty for failures)}
+\label{tab:overall_performance}
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & SR-1 (\%) & SR-10 (\%) & SR-50 (\%) & Median Error (\%) & Mean Time (s) & Total Runs \\
+\midrule
+ODEPE-GPR & 56.9 & 68.0 & 81.3 & 0.21 & 527.6 & 550 \\
+ODEPE-GPR (polished) & 58.9 & 69.8 & 82.4 & 0.10 & 1571.9 & 550 \\
+SciML & 52.0 & 69.6 & 90.7 & 0.40 & 222.2 & 550 \\
+AMIGO2 [0,10] & 56.9 & 66.0 & 79.3 & 0.11 & 706.4 & 550 \\
+AMIGO2 [0,100] & 52.2 & 60.5 & 76.2 & 0.37 & 737.4 & 550 \\
+\bottomrule
+\end{tabular}
+\end{table}
