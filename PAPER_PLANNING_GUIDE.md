@@ -3,23 +3,28 @@
 ## 1. Directory Structure & Key Resources
 
 ### Core Paper Materials
-- **`GPR_for_parameter_estimation/main.tex`** - Your extended abstract (IFAC conference)
-  - Current state of the GPR paper
-  - Contains core methodology description
-  - Has preliminary results section
+- **`paper/paper.tex`** - Main paper (current work)
+  - Complete manuscript with all sections
+  - Uses figures/ and tables/ subdirectories
+  - Bibliography in paper/references.bib
 
-- **`AMC-Revision-Final.tex`** - Published comprehensive paper
+- **`references/conference_submission/GPR_for_parameter_estimation/main.tex`** - IFAC extended abstract
+  - Original conference submission
+  - Contains preliminary methodology and results
+  - Reference for concise algorithm description
+
+- **`references/published_papers/AMC-Revision-Final.tex`** - Published comprehensive paper
   - Reference for writing style and structure
   - Source for background on algebraic methods
   - Contains detailed mathematical derivations you can reference
 
-- **`pres2.tex`** - Presentation slides
+- **`references/presentations/pres2.tex`** - Presentation slides
   - Good source for clear, concise problem statements
   - Contains effective visualizations
   - Has the key comparison figure (AAA vs GPR)
 
 ### Supporting Evidence
-- **`EstimationDerivativsfromNoisyData.pdf`** - Derivative estimation benchmark
+- **`references/published_papers/EstimationDerivativsfromNoisyData.pdf`** - Derivative estimation benchmark
   - 28 methods compared
   - Proves GPR+Taylor-AD is optimal
   - Will be cited as supporting evidence
@@ -31,7 +36,11 @@
   - `combined_results_filtered.csv` - Raw benchmark data
 
 ### Key Figures/Tables Location
-- **Comparison plot** (AAA vs GPR): Referenced in `pres2.tex` as `gpr_vs_aaa_comparison.pdf`
+- **Current paper figures**: `paper/figures/` directory
+  - `figure1_gpr_demo.pdf` - GPR demonstration
+  - `noise_degradation_curves.pdf` - Performance vs noise analysis
+- **Current paper tables**: `paper/tables/` directory (LaTeX table files)
+- **Comparison plot** (AAA vs GPR): Referenced in `references/presentations/pres2.tex` as `gpr_vs_aaa_comparison.pdf`
 - **Performance tables**: `dataset_package/summary_statistics/` contains CSV files ready for LaTeX tables
 - **System definitions**: `dataset_package/systems.json` for methodology section
 

@@ -33,8 +33,12 @@
 
 ### Figure 1: AAA vs GPR Comparison
 **Source:** Already exists as `gpr_vs_aaa_comparison.pdf`
-**Location:** Referenced in `pres2.tex`
+**Location:** Referenced in `references/presentations/pres2.tex`
 **Shows:** Dramatic difference in handling noisy data
+
+**Note:** Current paper figures are in `paper/figures/`:
+- `figure1_gpr_demo.pdf` - GPR demonstration figure
+- `noise_degradation_curves.pdf` - Performance degradation analysis
 
 ### Figure 2: Error vs Noise Level (Log-Log Plot)
 **Data source:** `dataset_package/summary_statistics/performance_by_noise.csv`
@@ -61,7 +65,7 @@ plt.grid(True, which="both", ls="-", alpha=0.2)
 **Key insight:** ODEPE is slower than SciML but faster than ODEPE_polish
 
 ### Supporting Evidence from Derivative Benchmark
-**Source:** `EstimationDerivativsfromNoisyData.pdf`
+**Source:** `references/published_papers/EstimationDerivativsfromNoisyData.pdf`
 **Key metrics to extract:**
 - Table 2 (p.8): Overall rankings showing GP-TaylorAD-Julia as #1
 - Figure 3 (p.10): Performance across derivative orders
