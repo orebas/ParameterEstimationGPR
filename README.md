@@ -25,14 +25,19 @@ cd ParameterEstimationGPR
 
 ### Build the Paper
 
-Generate all tables, figures, and compile the PDF:
+Activate the virtual environment first:
 ```bash
-python3 build_paper.py
+source .venv/bin/activate
+```
+
+Then generate all tables, figures, and compile the PDF:
+```bash
+python build_paper.py
 ```
 
 The compiled paper will be at `paper/paper.pdf`.
 
-**Note:** Use `python3` on most Linux/Mac systems, or `python` on Windows or systems with Python 3 as default.
+**Note:** After activating the venv, `python` points to the venv's Python (not system Python). You can deactivate the venv with `deactivate` when done.
 
 ## Repository Structure
 
