@@ -29,6 +29,9 @@ metrics_analysis/
 *.bbl
 *.blg
 
+# Generated PDFs (build artifacts)
+paper/*.pdf
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -43,8 +46,9 @@ Thumbs.db
 *.temp
 *~
 
-# Documentation and analysis (optional - keep if needed)
-# Uncomment to ignore:
-# *.md
-# AUDIT_*.md
-# BEFORE_AFTER_*.md
+# Swap files
+*.swp
+*.swo
+
+# Deprecated/archived files (local only)
+deprecated/
