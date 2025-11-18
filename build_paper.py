@@ -86,8 +86,9 @@ def step1_filter_data():
         print("  Skipping - assuming filtered data already exists")
         return True
 
-    cmd = ["python3", str(script)]
-    return run_command(cmd, "Filtering non-identifiable parameters")
+    # Use venv Python and run from dataset_package directory
+    cmd = [VENV_PYTHON, str(script)]
+    return run_command(cmd, "Filtering non-identifiable parameters", cwd=DATASET_DIR)
 
 def step2_generate_tables():
     """Step 2: Generate all tables."""
