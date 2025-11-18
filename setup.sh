@@ -44,8 +44,15 @@ echo ""
 
 # Install dependencies
 echo "Installing dependencies..."
-uv pip install -e .
-echo "✓ Dependencies installed"
+# Install the project in editable mode (allows scripts to import from each other)
+if uv pip install -e . 2>/dev/null; then
+    echo "✓ Dependencies installed (editable mode)"
+else
+    # Fallback: install just the dependencies if editable install fails
+    echo "⚠️  Editable install failed, installing dependencies only..."
+    uv pip install pandas numpy scipy scikit-learn statsmodels matplotlib seaborn plotly adjusttext networkx umap-learn pingouin dash pyyaml pyarrow tqdm tabulate ipykernel jupyter
+    echo "✓ Dependencies installed"
+fi
 echo ""
 
 # Success message
