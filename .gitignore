@@ -52,3 +52,9 @@ Thumbs.db
 
 # Deprecated/archived files (local only)
 deprecated/
+
+# Overleaf workflow
+overleaf_package/
+overleaf_package.zip
+overleaf_download/
+backups/
