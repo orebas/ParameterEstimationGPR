@@ -58,3 +58,4 @@ overleaf_package/
 overleaf_package.zip
 overleaf_download/
 backups/
+.env
