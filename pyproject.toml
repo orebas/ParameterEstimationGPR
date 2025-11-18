@@ -1,0 +1,60 @@
+[project]
+name = "parameter-estimation-gpr"
+version = "1.0.0"
+description = "GPR-Enhanced Parameter Estimation: Data Analysis, Visualization, and Paper Generation"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    # Data analysis and computation
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "scikit-learn>=1.3.0",
+    "statsmodels>=0.14.0",
+
+    # Visualization
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.14.0",
+    "adjusttext>=0.8",
+
+    # Network and advanced visualization
+    "networkx>=3.0",
+    "umap-learn>=0.5.0",
+
+    # Statistical analysis
+    "pingouin>=0.5.0",
+
+    # Interactive dashboards (optional)
+    "dash>=2.10.0",
+
+    # Data formats and utilities
+    "pyyaml>=6.0",
+    "pyarrow>=10.0.0",
+    "tqdm>=4.65.0",
+    "tabulate>=0.9.0",
+
+    # Jupyter support for exploratory analysis
+    "ipykernel>=6.20.0",
+    "jupyter>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.0.260",
+    "ipdb>=0.13.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']

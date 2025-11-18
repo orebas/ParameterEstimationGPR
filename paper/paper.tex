@@ -4,9 +4,9 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{lipsum} % For dummy text, will be removed
-\usepackage{hyperref}
 \usepackage[margin=1in]{geometry} % Adjust margins for article class
 \usepackage{float}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 
 \title{Making Algebraic Parameter Estimation Practical for Noisy Data via Gaussian Process Regression}
 
@@ -25,7 +25,7 @@
 \maketitle
 
 \begin{abstract}
-Parameter estimation for ordinary differential equation (ODE) models is a critical task often hindered by noisy data and the limitations of traditional optimization methods. The differential-algebraic approach offers theoretical advantages, such as eliminating the need for initial parameter guesses, and finding all global solutions without getting stuck in local minima. The algebraic approach has been historically hampered by its sensitivity to measurement noise. In this work, we resolve this limitation by replacing the noise-sensitive derivative estimation step with a robust probabilistic framework based on Gaussian Process Regression (GPR). We demonstrate through a comprehensive benchmark across 550 datasets on 11 dynamical systems that our GPR-enhanced method is highly competitive with modern optimization techniques. When paired with a local refinement step, our method achieves the highest success rate (58.5\%) for high-precision (1\% error) tasks, making the powerful differential-algebraic method a practical and reliable tool for parameter estimation from real-world, noisy data.
+Parameter estimation for ordinary differential equation (ODE) models is a critical task often hindered by noisy data and the limitations of traditional optimization methods. The differential-algebraic approach offers theoretical advantages, such as eliminating the need for initial parameter guesses, and finding all global solutions without getting stuck in local minima. The algebraic approach has been historically hampered by its sensitivity to measurement noise. In this work, we resolve this limitation by replacing the noise-sensitive derivative estimation step with a robust probabilistic framework based on Gaussian Process Regression (GPR). We demonstrate through a comprehensive benchmark across 550 datasets on 11 dynamical systems that our GPR-enhanced method is highly competitive with modern optimization techniques. When paired with a local refinement step, our method achieves the highest success rate for high-precision parameter estimation (55.6\% at a 1\% error tolerance) and the lowest median maximum error of all tested methods, making the powerful differential-algebraic method a practical and reliable tool for parameter estimation from real-world, noisy data.
 \end{abstract}
 
 % \begin{keywords}
@@ -132,7 +132,7 @@ This system is typically overdetermined. We reduce it to a square system by sele
 \subsection{Step 5: Aggregation via Multiple Time Points}
 In practice, performing the estimation at a single time point $t_0$ can be sensitive to the local data quality. To improve robustness, we repeat the estimation process at multiple time points (e.g., 10 points for the benchmarks in this paper). This ``multiple shooting" approach yields a collection of candidate parameter sets from each point. This process is embarrassingly parallelizable, as each time point can be processed independently. The resulting sets of solutions are aggregated before the final filtering step.  
 \subsection{Step 6: Solution Filtering and Validation}
-The aggregated set of candidate solutions is first filtered to remove any solutions that are non-physical (e.g., negative parameter values if known to be positive) or lie outside user-provided bounds. For the remaining candidates, we perform a full numerical simulation of the original ODE system and compute the root-mean-square error (RMSE) against the original data. The solutions with the RMSE below a specified tolerance are selected as  final solutions.
+The aggregated set of candidate solutions is first filtered to remove any solutions that are non-physical (e.g., negative parameter values if known to be positive) or, optionally, lie outside user-provided bounds. For the remaining candidates, we perform a full numerical simulation of the original ODE system and compute the root-mean-square error (RMSE) against the original data. The solutions with RMSE below a tolerance (with a reasonable default provided) are selected as final solutions.
 
 \subsection{Step 7: Optional Polishing Step}
 In addition to the raw algebraic solutions, we consider a polished variant in which the ODEPE-GPR solution is used as an initial guess for a local least-squares refinement using the SciML optimizer. For this step, we use hyperparameters appropriate for a local search, assuming the initial guess is already close to a minimum, and run a limited number of iterations. We denote this variant \texttt{ODEPE-GPR (polished)}.
@@ -142,7 +142,7 @@ In addition to the raw algebraic solutions, we consider a polished variant in wh
 To validate the performance and robustness of our GPR-enhanced algebraic method (which we will refer to as \texttt{ODEPE-GPR}), we conducted a comprehensive benchmark against established parameter estimation methods. This section details the benchmark systems, baseline methods, data generation protocol, and evaluation metrics used in our study.
 
 \subsection{Benchmark Systems}
-We selected a diverse suite of 11 ODE models from various scientific domains to ensure our evaluation is generalizable. The systems were chosen to cover a range of complexities in terms of the number of parameters, number of states, and dynamic behaviors (e.g., oscillations, stiff dynamics). The benchmark suite includes well-known models from ecology (Lotka-Volterra), epidemiology (SEIR), neuroscience (FitzHugh-Nagumo), and immunology (Crauste). A full description of the models can be found in Appendix~\ref{app:models}.
+We selected a diverse suite of 11 ODE models from various scientific domains to ensure our evaluation is generalizable. The systems were chosen to cover a range of complexities in terms of the number of parameters, number of states, and dynamic behaviors (e.g., oscillations, stiff dynamics). The benchmark suite includes well-known models from ecology (Lotka-Volterra), epidemiology (SEIR), neuroscience (FitzHugh-Nagumo), and immunology (Crauste). A full description of the models, including their equations and observed outputs, can be found in the supplementary materials.
 
 
 \subsection{Baseline Methods for Comparison}
@@ -152,22 +152,32 @@ We compare the performance of our method against three distinct classes of param
     \item \textbf{Local Optimization (\texttt{SciML}):} We use the SciML ecosystem in Julia~\cite{rackauckas2020universal} to represent a standard, modern local optimization approach. This single-shooting method uses a gradient-based optimizer (BFGS) to minimize a least-squares loss function with a search range of $[0,10]$. This baseline is representative of common practice in the field.
     \item \textbf{Global Optimization (\texttt{AMIGO2}):} We use AMIGO2~\cite{AMIGO2}, a widely-used toolbox in systems biology that implements a multi-start global optimization approach. This method performs multiple local optimizations from different starting points to better explore the parameter space and avoid local minima. We test two common search ranges, $[0,10]$ and $[0,100]$.
 \end{enumerate}
-For the optimization-based methods, we provide search ranges reflecting common scenarios where a user might have different levels of prior knowledge. Our method, \texttt{ODEPE-GPR}, does not require such a range.
+For the optimization-based methods, we provide search ranges reflecting common scenarios where a user might have different levels of prior knowledge. Our method, \texttt{ODEPE-GPR}, does not require such a range, initial parameter guesses, or multi-start strategies. While users may optionally provide physical bounds or adjust the fit-quality tolerance used during solution filtering, the method provides reasonable defaults and can operate fully autonomously.
+
+\subsubsection{Implementation Details}
+For reproducibility, we provide the key implementation details for each method:
+
+\textbf{ODEPE-GPR:} Gaussian process regression is performed using GaussianProcesses.jl with an RBF (squared exponential) kernel. An independent GP is fitted to each observed output component. Hyperparameters (length scale, signal variance, noise variance) are optimized via L-BFGS maximization of the log marginal likelihood. Derivatives are computed via automatic differentiation of the GP posterior mean. The polynomial system solver uses homotopy continuation (HomotopyContinuation.jl). For the polished variant, solutions are refined using L-BFGS optimization for up to 50 iterations.
+
+\textbf{SciML:} Parameter estimation uses the BFGS optimizer from Optim.jl with a maximum of 200,000 iterations. The ODE system is solved using the Tsit5 adaptive Runge-Kutta method with absolute and relative tolerances of $10^{-13}$. Gradients are computed using ForwardDiff.jl automatic differentiation.
+
+\textbf{AMIGO2:} Global optimization uses the enhanced Scatter Search (eSS) algorithm with a maximum of 200,000 function evaluations and 600-second time limit. Local refinement is performed using the nl2sol algorithm with up to 100,000 iterations and tolerances of $10^{-13}$. ODE integration uses CVODES with absolute and relative tolerances of $10^{-13}$.
 
 \subsection{Data Generation and Noise Protocol}
 For each benchmark system, we generated synthetic data to create a controlled experimental environment where the ground-truth parameters are known.
 \begin{enumerate}
     \item \textbf{Parameter Sampling:} For each of 10 experimental trials, true parameter values and initial conditions were sampled uniformly from the interval $[0.1, 0.9]$.
-    \item \textbf{Data Simulation:} The ODE system was solved using a high-precision numerical integrator to generate a baseline, noise-free trajectory.
-    \item \textbf{Noise Injection:} To simulate realistic experimental data, we added Gaussian white noise to the noise-free trajectory. The standard deviation of the noise was scaled relative to the standard deviation of the noise-free signal. We tested five noise levels, ranging from very low ($10^{-8}$) to significant ($10^{-2}$).
+    \item \textbf{Data Simulation:} The ODE system was solved using a high-precision numerical integrator (Vern9 with tolerances $10^{-13}$) over the time interval $[-1, 1]$ to generate a baseline, noise-free trajectory. We recorded 1001 equally spaced time points for each system.
+    \item \textbf{Observables:} For each system, only a subset of state variables were treated as observable, reflecting realistic experimental scenarios where not all system states can be directly measured. The specific observed outputs for each system are detailed in the supplementary materials.
+    \item \textbf{Noise Injection:} To simulate realistic experimental data, we added Gaussian white noise to the noise-free trajectory. We considered one noise-free condition and four nonzero noise levels. Independent, zero-mean Gaussian noise with standard deviation $\sigma = \alpha \cdot \text{SD}(y_{\text{true}})$ was added to each observed component at each time point, where $\alpha \in \{0, 10^{-8}, 10^{-6}, 10^{-4}, 10^{-2}\}$. The same noise level $\alpha$ was applied to all outputs of a given system, giving a range from noise-free to significant noise conditions.
 \end{enumerate}
-This protocol results in 11 systems $\times$ 5 noise levels $\times$ 10 trials = 550 total datasets per method, allowing us to assess the robustness and average performance of each estimation method.
+This protocol results in 11 systems $\times$ 5 noise conditions $\times$ 10 trials = 550 total datasets per method, allowing us to assess the robustness and average performance of each estimation method.
 
 \subsection{Evaluation Metrics}
 To quantify the performance of each method, we use two primary metrics. Importantly, any parameters known to be structurally unidentifiable from the analysis in Step 1 are excluded a priori from all error calculations.
 \begin{enumerate}
     \item \textbf{Success Rate:} A parameter estimation run is considered a ``success" based on multiple relative error thresholds. We report the percentage of trials where the relative error for every identifiable parameter is less than 1\% (SR-1), 10\% (SR-10), and 50\% (SR-50). This multi-threshold approach captures both the precision and the overall reliability of a method.
-    \item \textbf{Median Relative Error:} For each experimental run, we calculate the mean relative error across all identifiable parameters. The relative error for a single parameter $p$ is defined as $|p_{\text{true}} - p_{\text{estimated}}| / |p_{\text{true}}|$. Runs that failed to produce any result are assigned a penalty error of $10^6$. We then report the median of these per-run mean errors across all experiments. We use the median because it is robust to occasional outliers. For locally identifiable systems where our method returns multiple solutions, for the purpose of this benchmark we select the solution closest to the known ground truth to calculate the error.
+    \item \textbf{Run-wise worst-parameter error:} For each run, we compute the maximum relative error over all identifiable parameters. The relative error for a parameter $p$ is defined as $|p_{\text{true}} - p_{\text{estimated}}| / |p_{\text{true}}|$. For runs that failed to produce any result, we assign a penalty error of $10^6$ to the maximum error for that run. We then summarize these per-run worst errors by reporting their median and 90th percentile (P90) across all runs. We use the median because it is robust to occasional outliers. This run-level aggregation ensures that a method is only deemed successful when \emph{all} parameters in a run meet the quality threshold. For locally identifiable systems where our method returns multiple solutions, we select the solution closest to the known ground truth for error calculation.
 \end{enumerate}
 
 \section{Results}
@@ -175,22 +185,36 @@ To quantify the performance of each method, we use two primary metrics. Importan
 Our benchmark provides a nuanced view of the performance of different parameter estimation strategies. The results reveal a clear trade-off between precision, robustness, and computational speed.
 
 \subsection{Overall Performance}
-The aggregate performance across all systems and noise levels is summarized in Table~\ref{tab:overall_performance}. This table shows a clear trade-off: \texttt{ODEPE-GPR (polished)} is the most precise method, achieving the highest success rate at the strict 1\% error threshold (58.5\%). In contrast, \texttt{SciML} is the most robust, achieving the highest success rate at the 50\% error threshold (90.0\%), and is also the fastest.
+The aggregate performance of all methods across all test systems and noise levels is summarized in Table~\ref{tab:overall_performance}. Performance is evaluated using run-level metrics, where a run is deemed successful if the relative error for \emph{all} its parameters falls below a specified threshold. We report the fraction of successful runs at 1\%, 10\%, and 50\% thresholds (Success@X\%). To characterize accuracy, we first find the maximum parameter error within each run and then report the median and 90th percentile (P90) of these maximum errors across all runs.
 
 \input{tables/table_1_overall_performance.tex}
 
-The results in Table~\ref{tab:overall_performance} highlight several key findings. Our GPR-enhanced method, \texttt{ODEPE-GPR}, demonstrates excellent reliability, with a high success rate even at a strict 1\% error threshold (SR-1). While the \texttt{SciML} optimizer achieves a higher success rate at the looser 50\% threshold, our GPR-enhanced method is more likely to produce a high-precision result. In terms of accuracy, \texttt{ODEPE-GPR} achieves a median error of 0.21\%, which is highly competitive.
+The results highlight a distinct trade-off between computational efficiency and parameter precision. \texttt{ODEPE-GPR (polished)} stands out for its accuracy, achieving the highest success rates at strict 1\% (55.6\%) and 10\% (62.7\%) error tolerances. It also delivers the lowest median maximum error (0.30\%), making it the most precise method on average. This high precision, however, requires the most computation time (1571.9s). In contrast, \texttt{SciML} is the fastest method by a significant margin (222.2s) and demonstrates the most robustness at a looser tolerance, with the highest Success@50\% rate (73.1\%). Its P90 error, while high, suggests a more graceful degradation on the most challenging runs. The standard \texttt{ODEPE-GPR} and \texttt{AMIGO2 [0,10]} offer balanced performance profiles, positioning them as competitive intermediates.
+
+Ultimately, the findings suggest that the optimal choice of method is application-dependent. For problems demanding the highest possible parameter accuracy where computational cost is a secondary concern, \texttt{ODEPE-GPR (polished)} is the leading option. For high-throughput applications where speed is critical and moderate accuracy is sufficient, \texttt{SciML} provides a fast and robust alternative.
 
 \subsection{Robustness to Measurement Noise}
 The performance degradation as noise increases is detailed in Table~\ref{tab:noise_performance}. This view confirms the trade-offs seen in the overall performance.
 
 \input{tables/table_2_performance_by_noise.tex}
 
-The data shows that the GPR-based methods offer unparalleled precision in low-noise regimes (no noise to $10^{-6}$). However, as the noise level increases past the critical threshold of $10^{-4}$, their performance degrades more rapidly than the \texttt{SciML} optimizer, which proves to be the most robust method in high-noise conditions. This analysis shows that methods do not fail catastrophically but degrade gracefully, producing less accurate estimates. The choice of method should therefore be guided by the expected noise level and the required precision of the application.
+In the noise-free and very low-noise regimes ($\alpha = 0$ to $10^{-6}$), \texttt{ODEPE-GPR (polished)} achieves the best overall accuracy, with the lowest median worst-parameter error across systems. However, as the noise level increases past the critical threshold of $10^{-4}$, GPR-based methods degrade more rapidly than the \texttt{SciML} optimizer, which proves to be the most robust method in high-noise conditions. On simpler systems such as the harmonic oscillator and Van der Pol, all three methods perform comparably at low noise.
+
+To complement the error magnitude analysis, we examine success rates at different precision thresholds across noise levels. Tables~\ref{tab:success_10_noise}, \ref{tab:success_50_noise}, and~\ref{tab:success_1_noise} show the percentage of runs achieving complete success (all parameters below threshold) at 10\%, 50\%, and 1\% error tolerances, respectively.
+
+\input{tables/success_10pct_by_noise.tex}
+
+\input{tables/success_50pct_by_noise.tex}
+
+\input{tables/success_1pct_by_noise.tex}
+
+These success rate tables reveal distinct patterns in method reliability as noise increases. At the strictest 1\% threshold (Table~\ref{tab:success_1_noise}), \texttt{ODEPE-GPR (polished)} excels in noise-free conditions with 97.3\% success, but this advantage narrows considerably as noise increases, with all methods converging to 14--17\% success at the highest noise level. The 10\% threshold (Table~\ref{tab:success_10_noise}) shows a more pronounced divergence: \texttt{ODEPE-GPR (polished)} maintains strong performance in low-noise regimes, but \texttt{SciML} demonstrates superior robustness at medium-to-high noise levels. At the 50\% threshold (Table~\ref{tab:success_50_noise}), \texttt{SciML} achieves the highest success rate at $10^{-2}$ noise (40.9\%), compared to 29.1\% for \texttt{ODEPE-GPR (polished)}.
+
+This analysis shows that methods do not fail catastrophically but degrade gracefully, producing less accurate estimates as noise increases. The choice of method should therefore be guided by both the expected noise level and the required precision of the application: \texttt{ODEPE-GPR (polished)} for maximum accuracy in low-noise scenarios, and \texttt{SciML} for reliability when noise is substantial.
 
 \subsection{Performance Across System Complexity}
 
-To understand how method performance varies across different ODE systems, we examine median relative errors at both low and high noise levels. Tables~\ref{tab:low_noise_systems} and~\ref{tab:high_noise_systems} show the performance of the three leading methods across all 11 benchmark systems at $10^{-6}$ and $10^{-2}$ noise levels, respectively.
+To understand how method performance varies across different ODE systems, we examine median worst-parameter errors at both low and high noise levels. Tables~\ref{tab:low_noise_systems} and~\ref{tab:high_noise_systems} show the performance of the three leading methods across all 11 benchmark systems at $10^{-6}$ and $10^{-2}$ noise levels, respectively. These values represent the median of the maximum parameter error per run, consistent with the run-level aggregation used throughout this paper.
 
 \input{tables/system_performance_low_noise.tex}
 
@@ -200,21 +224,29 @@ At low noise (Table~\ref{tab:low_noise_systems}), all three methods perform well
 
 At high noise (Table~\ref{tab:high_noise_systems}), the performance landscape changes dramatically. SciML consistently achieves the lowest errors across most systems, demonstrating superior robustness. The GPR-based methods show significant performance degradation, with many systems exhibiting errors exceeding 100\%. Interestingly, the Harmonic Oscillator and Van der Pol systems remain remarkably robust even at high noise, suggesting that system structure plays a crucial role in noise sensitivity.
 
+\subsection{Computational Performance}
+
+While this paper focuses primarily on accuracy and robustness rather than computational efficiency, we provide runtime statistics for completeness. Table~\ref{tab:runtime} shows the median wall-clock time per run across all systems and noise levels.
+
+\input{tables/runtime_table.tex}
+
+These runtimes should be interpreted with caution, as the implementations vary significantly in their level of optimization and parallelization. The code was not optimized for speed, Julia compilation overhead is included, and threading strategies differ across methods. SciML is the fastest, followed by AMIGO2 and ODEPE-GPR. The polished variant adds moderate overhead for local refinement. For problems where accuracy is paramount and computational resources are available, the additional runtime of ODEPE-GPR (polished) may be justified by its superior precision in low-noise regimes.
+
 \section{Discussion}
 \label{sec:discussion}
 Our results present a compelling case for the viability of GPR-enhanced algebraic parameter estimation. The primary takeaway is that by addressing the critical weakness of the algebraic method---its sensitivity to noise---we have created a tool that is not only robust but also highly competitive with established optimization techniques, all while preserving the unique advantages of the algebraic approach.
 
 \subsection{Why GPR Succeeds Where Interpolation Fails}
-The catastrophic failure of the `ODEPE-AAA` method at any level of noise confirms that interpolation is the wrong paradigm for derivative estimation from experimental data. Interpolation methods are designed to pass *through* data points, which forces them to model high-frequency noise rather than the underlying smooth signal. Differentiation, being a high-pass operator, then massively amplifies this modeled noise, leading to useless derivative estimates.
+In preliminary experiments with the AAA-based algebraic method (\texttt{ODEPE-AAA}), we observed severe sensitivity to noise, with success rates dropping to near zero as soon as any noise was added to the data. This supports our conclusion that direct interpolation of noisy data is a poor paradigm for derivative estimation in this setting. Because interpolants are constrained to pass close to every noisy point, differentiation amplifies noise catastrophically. In contrast, regression-based approaches like GPR explicitly trade off data-fit and smoothness, making them far more suitable for this task.
 
-GPR, by contrast, is a regression method built on a probabilistic foundation. It does not assume that the data points are exact. Instead, it assumes that a smooth, underlying function exists and that the observations are a combination of this function and some measurement noise. By optimizing its hyperparameters, GPR effectively learns to separate the signal from the noise. The resulting posterior mean function is a principled, smoothed representation of the underlying dynamics, whose derivatives are consequently stable and accurate. This fundamental difference in modeling assumptions is the key to our method's success.
+GPR is a regression method built on a probabilistic foundation. It does not assume that the data points are exact. Instead, it assumes that a smooth, underlying function exists and that the observations are a combination of this function and some measurement noise. By optimizing its hyperparameters, GPR effectively learns to separate the signal from the noise. The resulting posterior mean function is a principled, smoothed representation of the underlying dynamics, whose derivatives are consequently stable and accurate. This fundamental difference in modeling assumptions is the key to our method's success.
 
 \subsection{Practical Advantages and Trade-offs}
-The primary advantage of our GPR-enhanced method over traditional optimization approaches is that it requires no initial parameter guesses. This is a significant practical benefit, as the performance of optimizers can be highly sensitive to the choice of starting point, often requiring extensive manual tuning or computationally expensive multi-start strategies to find a good solution. Our method is fully automated, removing a major source of user error and manual effort.
+The primary advantage of our GPR-enhanced method over traditional optimization approaches is that it requires no initial parameter guesses or search ranges. This is a significant practical benefit, as the performance of optimizers can be highly sensitive to the choice of starting point, often requiring extensive manual tuning or computationally expensive multi-start strategies to find a good solution. Our method is fully automated with reasonable default settings, removing a major source of user error and manual effort. Users may optionally provide physical constraints (such as positivity) or adjust the fit-quality tolerance if desired, but these are not required for the method to operate successfully.
 
 Furthermore, because our method is rooted in solving algebraic systems, it has the capacity to find *all* possible parameter solutions for locally identifiable systems. This provides a global perspective on the parameter landscape that is simply unavailable to standard local optimizers, which are designed to find only a single minimum. For problems in systems biology and engineering where multiple parameter sets can explain the data, this feature is not just a convenience but a critical tool for correct model analysis.
 
-The main trade-off, as suggested by our results on more complex systems (Tables~\ref{tab:low_noise_systems} and~\ref{tab:high_noise_systems}), appears to be in the scalability of accuracy. While the method is highly reliable (high success rate), the average accuracy for the highly complex Crauste model was lower than that of the fine-tuned optimizer. This may be due to the increased difficulty of GPR fitting on complex, multi-output signals, where cross-correlations between outputs could be significant but are not modeled by our independent GPR approach. However, even in these cases, our method provides a highly reliable way to find a good-quality solution automatically. Such a solution could then serve as an excellent, data-driven starting point for a local optimizer if maximum precision is the ultimate goal, combining the strengths of both approaches.
+The main trade-off, as suggested by our results on more complex systems (Tables~\ref{tab:low_noise_systems} and~\ref{tab:high_noise_systems}), appears to be in the scalability of accuracy. While the method is highly reliable (high success rate), the average accuracy for the highly complex Crauste model was lower than that of the fine-tuned optimizer. This may reflect the increased sensitivity of the algebraic method on highly nonlinear systems, where even small errors in derivative estimates can propagate significantly through the polynomial system. However, even in these cases, our method provides a highly reliable way to find a good-quality solution automatically. Such a solution could then serve as an excellent, data-driven starting point for a local optimizer if maximum precision is the ultimate goal, combining the strengths of both approaches.
 
 \subsection{Limitations and Future Work}
 The current method has two main limitations that point toward avenues for future research. First, like all two-stage methods, it requires data that is sufficiently dense to allow for a reliable GPR fit. The performance on very sparse datasets has not been evaluated, and developing strategies to handle such data is an important next step. This could involve using priors informed by the ODE structure within the GPR model itself.
@@ -225,11 +257,13 @@ Second, the computational cost of the polynomial solving step scales with the nu
 \label{sec:related_work}
 Our work is positioned at the intersection of several fields: parameter estimation for dynamical systems, differential algebra, and machine learning for scientific computing.
 
-Traditional parameter estimation has long been dominated by optimization-based "shooting" methods, both local and global, as exemplified by the `SciML` and `AMIGO2` baselines used in this study. A thorough review of these methods can be found in works by Raue et al.~\cite{Raue2015} and Villaverde and Banga~\cite{Villaverde2014}.
+Traditional parameter estimation has long been dominated by optimization-based ``shooting'' methods, both local and global, as exemplified by the \texttt{SciML} and \texttt{AMIGO2} baselines used in this study. A thorough review of these methods can be found in works by Raue et al.~\cite{Raue2015} and Villaverde and Banga~\cite{Villaverde2014}.
 
-The differential-algebraic approach to structural identifiability and parameter estimation has a rich theoretical history, with key contributions from authors like Ljung, Glad, and Mesmer. Our work builds directly on the algorithmic framework presented in our previous paper~\cite{bassik2023robustparameterestimationrational}, which in turn relies on the identifiability analysis tools developed by Hong et al.~\cite{hong_sian_2019}.
+The differential-algebraic approach to structural identifiability and parameter estimation has a rich theoretical history, with key contributions from authors like Ljung and Glad~\cite{Ljung1994}. Our work builds directly on the algorithmic framework presented in our previous paper~\cite{bassik2023robustparameterestimationrational}, which in turn relies on the identifiability analysis tools developed by Hong et al.~\cite{hong_sian_2019}.
 
-The use of Gaussian Processes in the context of differential equations is an active area of research. Some works focus on directly solving ODEs with GP-based methods, while others use GPs for parameter inference, often in a full Bayesian framework. Key papers in this area include the work of Calderhead et al.~\cite{Calderhead2009} and Graepel et al.~\cite{Graepel2012}, which laid the groundwork for using GPs to connect ODE models with data. More recent work includes Bayesian approaches combining GPs with NeuralODEs~\cite{Bhouri2022} and variational multiple shooting methods~\cite{Hegde2022}. In contrast to these methods, our approach is not fully Bayesian; we use GPR as a highly effective "black-box" smoother and differentiator within a larger algebraic framework. The comprehensive benchmark by Bassik (2025)~\cite{bassik2025benchmark} provides the direct evidence for our choice of GPR as the most robust method for this specific task, a finding that is central to the success of our approach.
+The use of Gaussian Processes in the context of differential equations is an active area of research. Some works focus on directly solving ODEs with GP-based methods, while others use GPs for parameter inference, often in a full Bayesian framework. Key papers in this area include the work of Calderhead et al.~\cite{Calderhead2009} and Girolami~\cite{Girolami2008}, which laid the groundwork for using GPs to connect ODE models with data. More recent work includes Bayesian approaches combining GPs with NeuralODEs~\cite{Bhouri2022} and variational multiple shooting methods~\cite{Hegde2022}. In contrast to these methods, our approach is not fully Bayesian; we use GPR as a highly effective ``black-box'' smoother and differentiator within a larger algebraic framework.
+
+The challenge of accurately estimating derivatives from noisy data was systematically addressed in a benchmark study by Bassik (2025)~\cite{bassik2025benchmark}. The study compared multiple numerical differentiation methods---including finite differences, Savitzky--Golay filters, and various splines---across thousands of test cases with diverse functions, noise levels ranging from $10^{-6}$ to $10^{-2}$, and derivatives up to the 7th order. Gaussian Process Regression (GPR) with automatic differentiation of its posterior mean consistently emerged as the most robust approach. It achieved substantially lower median relative errors than competing methods, with a particularly strong advantage for higher-order derivatives where noise amplification is most severe. This superior performance, rooted in GPR's probabilistic noise modeling and automated hyperparameter tuning, provides direct empirical justification for our selection of GPR as the core differentiation engine in our parameter estimation framework.
 
 Recently, Demin et al.~\cite{Demin2025} proposed a certified approach to parameter estimation using polynomial system solving, offering rigorous guarantees on solution accuracy. While their method provides theoretical certainty, our GPR-enhanced approach offers a practical balance between accuracy and computational efficiency for real-world noisy data.
 
@@ -246,6 +280,12 @@ Our comprehensive benchmark demonstrates that the GPR-enhanced approach is a via
 \section{Benchmark Model Details}
 \label{sec:benchmark_models_appendix}
 This appendix presents the ODE systems used in the benchmarks, adapted from~\cite{bassik2023robustparameterestimationrational}.
+
+\subsection{System Specifications and Observed Outputs}
+
+Table~\ref{tab:observables} provides the detailed specifications for each benchmark system, including the number of state variables, parameters, and which outputs were treated as observable in our experiments. This information is essential for understanding the observational scenario and partial observability constraints of each system.
+
+\input{tables/observables_table.tex}
 
 \subsection{Harmonic Oscillator Model}
 A model for harmonic oscillators without damping.
@@ -343,6 +383,8 @@ Models kinetic processes in the biohydrogenation of fatty acids~\cite{Harvatine2
   \label{eq:bioh}
 \end{align}
 \textit{Outputs}: $y_1 = x_4, y_2 = x_5$.
+
+\textit{Note}: The state variable $x_7$ is structurally unidentifiable as it does not appear in the output equations nor influence any observed variables.
 
 \subsection{Mammillary 4-Compartment Model}
 A 4-compartment pharmacokinetic model~\cite{Jacobs1990} from the DAISY identifiability software examples~\cite{Bellu2007}.

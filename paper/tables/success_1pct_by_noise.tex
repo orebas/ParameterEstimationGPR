@@ -1,0 +1,15 @@
+\begin{table}[H]
+\centering
+\caption{Success@1\% by noise level. A run is successful if the maximum relative error across all parameters is less than 1\%. Values shown are the percentage of successful runs at each noise level.}
+\label{tab:success_1_noise}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Method & 0 & $10^{-8}$ & $10^{-6}$ & $10^{-4}$ & $10^{-2}$ \\
+\midrule
+ODEPE-GPR (polished) & 97.3 & 72.7 & 58.2 & 32.7 & 17.3 \\
+SciML & 62.7 & 65.5 & 61.8 & 37.3 & 14.5 \\
+AMIGO2 [0,10] & 80.9 & 70.9 & 63.6 & 36.4 & 15.5 \\
+\bottomrule
+\end{tabular}
+\end{table}

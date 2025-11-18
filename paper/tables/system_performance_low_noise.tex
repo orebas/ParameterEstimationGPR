@@ -1,21 +1,22 @@
 \begin{table}[H]
 \centering
-\caption{Median Relative Error (\%) at Low Noise ($10^{-6}$)}
+\caption{Median worst-parameter error (\%) at low noise ($10^{-6}$) by system. For each run, the maximum parameter error is computed; the median across runs is reported.}
+\label{tab:low_noise_systems}
 \small
-\begin{tabular}{lrrr}
+\begin{tabular}{lccc}
 \toprule
 System & ODEPE-GPR (polished) & SciML & AMIGO2 [0,10] \\
 \midrule
-Biohydrogenation & 26.0 & 59.6 & 51.6 \\
-Crauste & 6.39 & 4.57 & 0.31 \\
-DAISY MaMil3 & 0.092 & 0.009 & 0.008 \\
-DAISY MaMil4 & 30.7 & 5.95 & 33.6 \\
-FitzHugh-Nagumo & 0.001 & 0.001 & 0.000 \\
+Biohydrogenation & 56.2 & 196.3 & 94.8 \\
+Crauste & 58.5 & 14.4 & 1.15 \\
+DAISY MaMil3 & 0.25 & 0.058 & 0.060 \\
+DAISY MaMil4 & 120.4 & 45.4 & 109.3 \\
+FitzHugh-Nagumo & 0.001 & 0.001 & 0.002 \\
 Harmonic Oscillator & 0.000 & 0.000 & 0.000 \\
-HIV & 0.15 & 0.009 & 0.012 \\
-Lotka-Volterra & 0.076 & 0.080 & 0.059 \\
-SEIR & 3.75 & 7.40 & 24.9 \\
-Slow-Fast & 0.004 & 0.004 & 0.008 \\
+HIV & 0.59 & 0.032 & 0.043 \\
+Lotka-Volterra & 0.15 & 0.20 & 0.16 \\
+SEIR & 11.3 & 17.9 & 56.8 \\
+Slow-Fast & 0.006 & 0.006 & 0.016 \\
 Van der Pol & 0.000 & 0.000 & 0.000 \\
 \bottomrule
 \end{tabular}

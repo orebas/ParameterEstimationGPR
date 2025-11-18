@@ -14,6 +14,10 @@ __pycache__/
 *.pyd
 .Python
 
+# Generated outputs (tables, figures, analysis)
+outputs/
+metrics_analysis/
+
 # LaTeX compilation artifacts
 *.aux
 *.log
@@ -38,3 +42,9 @@ Thumbs.db
 *.tmp
 *.temp
 *~
+
+# Documentation and analysis (optional - keep if needed)
+# Uncomment to ignore:
+# *.md
+# AUDIT_*.md
+# BEFORE_AFTER_*.md

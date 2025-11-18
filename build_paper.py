@@ -9,15 +9,47 @@ import subprocess
 import shutil
 from pathlib import Path
 import sys
+import os
 
 # Paths
 ROOT_DIR = Path(__file__).parent
-VIZ_DIR = ROOT_DIR / "visualization"
+SCRIPTS_DIR = ROOT_DIR / "scripts"
+OUTPUTS_DIR = ROOT_DIR / "outputs"
 DATASET_DIR = ROOT_DIR / "dataset_package"
 PAPER_DIR = ROOT_DIR / "paper"
-VIZ_SCRIPTS = VIZ_DIR / "scripts"
-VIZ_OUTPUTS = VIZ_DIR / "outputs"
-VENV_PYTHON = VIZ_DIR / ".venv" / "bin" / "python3"
+
+def find_venv_python():
+    """
+    Auto-detect Python interpreter in virtual environment.
+    Checks common venv locations and adapts to Windows/Unix.
+    Falls back to current Python if no venv found.
+    """
+    # Check for venv in common locations
+    possible_venvs = [
+        ROOT_DIR / ".venv",
+        ROOT_DIR / "venv",
+        ROOT_DIR / "env",
+    ]
+
+    for venv_dir in possible_venvs:
+        if venv_dir.exists():
+            # Windows: Scripts/python.exe, Unix: bin/python3 or bin/python
+            if sys.platform == "win32":
+                python_exe = venv_dir / "Scripts" / "python.exe"
+            else:
+                python_exe = venv_dir / "bin" / "python3"
+                if not python_exe.exists():
+                    python_exe = venv_dir / "bin" / "python"
+
+            if python_exe.exists():
+                print(f"Using venv Python: {python_exe}")
+                return str(python_exe)
+
+    # Fall back to current Python
+    print(f"No venv found, using current Python: {sys.executable}")
+    return sys.executable
+
+VENV_PYTHON = find_venv_python()
 
 def run_command(cmd, description, cwd=None):
     """Run a command and handle errors."""
@@ -64,12 +96,12 @@ def step2_generate_tables():
     print("="*80)
 
     # Generate corrected Tables 1 & 2
-    cmd1 = [str(VENV_PYTHON), str(VIZ_SCRIPTS / "generate_corrected_tables_1_2.py")]
+    cmd1 = [VENV_PYTHON, str(SCRIPTS_DIR / "generate_corrected_tables_1_2.py")]
     if not run_command(cmd1, "Generating Tables 1-2 (corrected with 10^6 penalty)"):
         return False
 
     # Generate system performance tables (Tables 3-4)
-    cmd2 = [str(VENV_PYTHON), str(VIZ_SCRIPTS / "generate_system_performance_tables.py")]
+    cmd2 = [VENV_PYTHON, str(SCRIPTS_DIR / "generate_system_performance_tables.py")]
     if not run_command(cmd2, "Generating system performance tables (Tables 3-4)"):
         return False
 
@@ -88,9 +120,9 @@ def step3_generate_figures():
     ]
 
     for script_name in fig_scripts:
-        script = VIZ_SCRIPTS / script_name
+        script = SCRIPTS_DIR / script_name
         if script.exists():
-            cmd = [str(VENV_PYTHON), str(script)]
+            cmd = [VENV_PYTHON, str(script)]
             if not run_command(cmd, f"Running {script_name}"):
                 print(f"  ⚠ {script_name} failed, continuing...")
         else:
@@ -114,7 +146,7 @@ def step4_copy_outputs():
 
     print("\nCopying tables:")
     for src_name, dst_name in tables:
-        src = VIZ_OUTPUTS / "tables" / src_name
+        src = OUTPUTS_DIR / "tables" / src_name
         dst = PAPER_DIR / "tables" / dst_name
         if src.exists():
             shutil.copy2(src, dst)
@@ -123,7 +155,7 @@ def step4_copy_outputs():
             print(f"  ⚠ Source not found: {src_name}")
 
     # Figures to copy
-    figures_dir = VIZ_OUTPUTS / "figures" / "corrected"
+    figures_dir = OUTPUTS_DIR / "figures" / "corrected"
     if figures_dir.exists():
         print("\nCopying figures:")
         for fig_file in figures_dir.glob("*.pdf"):
@@ -167,12 +199,8 @@ def main():
     print("AUTOMATED PAPER BUILD PIPELINE")
     print("="*80)
     print(f"\nRoot directory: {ROOT_DIR}")
-
-    # Verify environment
-    if not VENV_PYTHON.exists():
-        print(f"\n✗ ERROR: Python venv not found at {VENV_PYTHON}")
-        print("Please ensure the visualization environment is set up.")
-        sys.exit(1)
+    print(f"Scripts directory: {SCRIPTS_DIR}")
+    print(f"Python executable: {VENV_PYTHON}\n")
 
     # Run pipeline steps
     success = True

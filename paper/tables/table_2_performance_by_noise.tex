@@ -1,16 +1,16 @@
 \begin{table}[ht]
 \centering
-\caption{Median relative error (\%) by noise level (Method A with $10^6$ penalty for failures)}
-\label{tab:performance_by_noise}
-\begin{tabular}{lrrrrr}
+\caption{Median worst-parameter error (\%) by noise level using run-level aggregation. For each run, the maximum parameter error is computed; the median across runs at each noise level is reported. Failed runs are assigned $10^6$ penalty.}
+\label{tab:noise_performance}
+\begin{tabular}{lccccc}
 \toprule
 Method & 0 & $10^{-8}$ & $10^{-6}$ & $10^{-4}$ & $10^{-2}$ \\
 \midrule
-ODEPE-GPR & 0.00 & 0.03 & 0.29 & 11.13 & 67.88 \\
-ODEPE-GPR (polished) & 0.00 & 0.01 & 0.09 & 5.90 & 68.52 \\
-SciML & 0.00 & 0.00 & 0.02 & 2.64 & 23.31 \\
-AMIGO2 [0,10] & 0.00 & 0.00 & 0.05 & 2.73 & 46.27 \\
-AMIGO2 [0,100] & 0.00 & 0.00 & 0.05 & 2.55 & 44.52 \\
+ODEPE-GPR & 0.00 & 0.11 & 0.93 & 29.89 & 216.34 \\
+ODEPE-GPR (polished) & 0.00 & 0.04 & 0.36 & 19.61 & 230.15 \\
+SciML & 0.01 & 0.01 & 0.07 & 9.89 & 93.26 \\
+AMIGO2 [0,10] & 0.00 & 0.00 & 0.15 & 9.92 & 163.69 \\
+AMIGO2 [0,100] & 0.00 & 0.00 & 0.16 & 8.28 & 150.10 \\
 \bottomrule
 \end{tabular}
 \end{table}

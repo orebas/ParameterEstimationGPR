@@ -1,16 +1,16 @@
 \begin{table}[ht]
 \centering
-\caption{Overall performance with multi-threshold success rates (Method A with $10^6$ penalty for failures)}
+\caption{Overall performance with run-level aggregation. Success@X\%: fraction of runs where \emph{all} parameters have relative error $<$X\%. Median/P90 Max Error: For each run, the maximum parameter error is computed; the median and 90th percentile across all runs are reported. Failed runs are assigned $10^6$ penalty.}
 \label{tab:overall_performance}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lccccc}
 \toprule
-Method & SR-1 (\%) & SR-10 (\%) & SR-50 (\%) & Median Error (\%) & Mean Time (s) & Total Runs \\
+Method & Success@1\% & Success@10\% & Success@50\% & Median Max (\%) & P90 Max (\%) \\
 \midrule
-ODEPE-GPR & 56.9 & 68.0 & 81.3 & 0.21 & 527.6 & 550 \\
-ODEPE-GPR (polished) & 58.9 & 69.8 & 82.4 & 0.10 & 1571.9 & 550 \\
-SciML & 52.0 & 69.6 & 90.7 & 0.40 & 222.2 & 550 \\
-AMIGO2 [0,10] & 56.9 & 66.0 & 79.3 & 0.11 & 706.4 & 550 \\
-AMIGO2 [0,100] & 52.2 & 60.5 & 76.2 & 0.37 & 737.4 & 550 \\
+ODEPE-GPR & 52.4 & 61.6 & 70.2 & 0.56 & 403.5 \\
+ODEPE-GPR (polished) & 55.6 & 62.7 & 71.6 & 0.30 & 430.1 \\
+SciML & 48.4 & 56.2 & 73.1 & 1.64 & 197.3 \\
+AMIGO2 [0,10] & 53.5 & 60.2 & 67.3 & 0.36 & 772.0 \\
+AMIGO2 [0,100] & 49.3 & 55.8 & 62.4 & 1.44 & 2316.7 \\
 \bottomrule
 \end{tabular}
 \end{table}

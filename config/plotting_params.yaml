@@ -1,0 +1,102 @@
+# Plotting Configuration Parameters
+# ==================================
+
+# Color schemes for different methods
+method_colors:
+  odepe: "#2E86AB"           # Blue
+  odepe_polish: "#A23B72"     # Purple
+  sciml: "#F18F01"            # Orange
+  amigo2_0_10: "#C73E1D"      # Red
+  amigo2_0_100: "#6A994E"     # Green
+
+# Alternative color scheme (colorblind-friendly)
+method_colors_cb:
+  odepe: "#0173B2"
+  odepe_polish: "#DE8F05"
+  sciml: "#029E73"
+  amigo2_0_10: "#CC78BC"
+  amigo2_0_100: "#ECE133"
+
+# Method display names for labels
+method_names:
+  odepe: "ODEPE-GPR"
+  odepe_polish: "ODEPE-GPR (polished)"
+  sciml: "SciML"
+  amigo2_0_10: "AMIGO2 [0,10]"
+  amigo2_0_100: "AMIGO2 [0,100]"
+
+# System display names
+system_names:
+  biohydrogenation: "Biohydrogenation"
+  crauste: "Crauste"
+  daisy_mamil3: "DAISY MaMil3"
+  daisy_mamil4: "DAISY MaMil4"
+  fitzhugh_nagumo: "FitzHugh-Nagumo"
+  harmonic: "Harmonic Oscillator"
+  hiv: "HIV"
+  lotka_volterra: "Lotka-Volterra"
+  seir: "SEIR"
+  slowfast: "Slow-Fast"
+  vanderpol: "Van der Pol"
+
+# System categories for grouping
+system_categories:
+  simple:
+    - harmonic
+    - vanderpol
+  medium:
+    - fitzhugh_nagumo
+    - lotka_volterra
+    - seir
+    - daisy_mamil3
+  complex:
+    - slowfast
+    - daisy_mamil4
+    - biohydrogenation
+    - hiv
+    - crauste
+
+# Figure settings
+figure:
+  dpi: 300
+  dpi_interactive: 100
+  figsize_single: [8, 6]
+  figsize_double: [12, 6]
+  figsize_grid: [14, 10]
+  font_size: 12
+  title_size: 14
+  label_size: 12
+  tick_size: 10
+  legend_size: 10
+
+# Style settings
+style:
+  use_style: "seaborn-v0_8-whitegrid"
+  grid_alpha: 0.3
+  line_width: 2
+  marker_size: 8
+  error_bar_capsize: 5
+  box_width: 0.6
+  violin_width: 0.8
+
+# Statistical settings
+statistics:
+  confidence_level: 0.95
+  significance_alpha: 0.05
+  bootstrap_iterations: 1000
+  success_threshold: 0.5  # 50% relative error threshold for success
+
+# Output settings
+output:
+  formats: ["png", "pdf", "svg"]
+  save_data: true  # Save underlying data for each plot
+  create_thumbnails: true
+  thumbnail_size: [400, 300]
+
+# Noise level formatting
+noise_labels:
+  0.0: "No noise"
+  1.0e-8: "$10^{-8}$"
+  1.0e-6: "$10^{-6}$"
+  1.0e-4: "$10^{-4}$"
+  1.0e-2: "$10^{-2}$"
